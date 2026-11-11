@@ -94,3 +94,33 @@ class MiniGit:
         self.__passos = 2
         return identificador
 
+    # Percorre o historico a partir da branch atual usando uma fila e devolve os commits como tupla.
+    def log(self):
+        commit_inicial = self.__branches[self.__branch_atual]
+        if commit_inicial is None:
+            return ()
+        visitados = []
+        fila = deque([commit_inicial])
+        while len(fila) > 0:
+            atual = fila.popleft()
+            if atual in visitados:
+                continue
+            visitados.append(atual)
+            fila.extend(self.__pais[atual])
+        return tuple(visitados)
+
+    # Procura na ordem de criacao o primeiro commit cuja mensagem contenha o texto buscado.
+    def buscar(self, texto):
+        for commit, texto_mensagem in self.__mensagens.items():
+            if texto in texto_mensagem:
+                return commit
+        return None
+
+    # Devolve uma tupla com todos os commits que possuem mais de um pai, na ordem de criacao.
+    def merges(self):
+        commits_merge = []
+        for commit, lista_pais in self.__pais.items():
+            if len(lista_pais) > 1:
+                commits_merge.append(commit)
+        return tuple(commits_merge)
+
