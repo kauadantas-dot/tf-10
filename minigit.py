@@ -27,6 +27,11 @@ class MiniGit:
     def passos(self):
         return self.__passos
 
+    # Devolve o nome da branch em que o repositorio esta posicionado no momento.
+    @property
+    def branch_atual(self):
+        return self.__branch_atual
+
     # Cria um novo commit filho do commit da branch atual e avanca o ponteiro da branch (2 passos).
     def commitar(self, mensagem):
         if not mensagem:
@@ -56,4 +61,36 @@ class MiniGit:
             raise ValueError(f"Commit inexistente: {commit}")
         self.__passos = 1
         return tuple(self.__pais[commit])
+
+    # Cria uma nova branch apontando para o commit atual da branch ativa (1 passo).
+    def criar_branch(self, nome):
+        if nome in self.__branches:
+            raise ValueError(f"A branch ja existe: {nome}")
+        if self.__branches[self.__branch_atual] is None:
+            raise ValueError("Ainda nao ha commits para criar uma branch")
+        self.__branches[nome] = self.__branches[self.__branch_atual]
+        self.__passos = 1
+
+    # Muda a branch ativa para a branch informada (1 passo).
+    def trocar_branch(self, nome):
+        if nome not in self.__branches:
+            raise ValueError(f"Branch inexistente: {nome}")
+        self.__branch_atual = nome
+        self.__passos = 1
+
+    # Cria um commit de uniao com dois pais na branch atual e avanca seu ponteiro (2 passos).
+    def mesclar(self, nome):
+        if nome not in self.__branches:
+            raise ValueError(f"Branch inexistente: {nome}")
+        if nome == self.__branch_atual:
+            raise ValueError("Nao e possivel mesclar uma branch com ela mesma")
+        self.__contador += 1
+        identificador = f"c{self.__contador}"
+        commit_atual = self.__branches[self.__branch_atual]
+        commit_origem = self.__branches[nome]
+        self.__pais[identificador] = [commit_atual, commit_origem]
+        self.__mensagens[identificador] = f"merge de {nome}"
+        self.__branches[self.__branch_atual] = identificador
+        self.__passos = 2
+        return identificador
 
