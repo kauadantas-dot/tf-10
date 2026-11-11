@@ -130,3 +130,54 @@ class MiniGit:
                 commits_merge.append(commit)
         return tuple(commits_merge)
 
+
+# Executa uma acao e captura erros do tipo ValueError para exibir na tela.
+def tentar(acao):
+    try:
+        acao()
+    except ValueError as erro:
+        print("erro:", erro)
+
+
+git = MiniGit()
+git.commitar("primeiro commit")
+print(git.passos)
+git.commitar("segundo commit")
+git.criar_branch("feature")
+print(git.passos)
+git.commitar("terceiro commit")
+git.trocar_branch("feature")
+git.commitar("quarto commit")
+git.trocar_branch("main")
+git.mesclar("feature")
+print(git.pais("c5"))
+print(git.log(), git.passos)
+print(git.mensagem("c3"), git.passos)
+print(git.buscar("quarto"), git.passos)
+print(git.merges())
+git.trocar_branch("feature")
+print(git.log(), git.passos)
+git.trocar_branch("main")
+
+tentar(lambda: git.trocar_branch("inexistente"))
+tentar(lambda: git.criar_branch("main"))
+tentar(lambda: git.mesclar("main"))
+tentar(lambda: git.pais("c99"))
+
+
+# Mede os passos gastos pelo ultimo commitar e pelo log para uma quantidade de commits.
+def medir(quantidade):
+    repositorio = MiniGit()
+    for indice in range(quantidade):
+        repositorio.commitar(f"commit {indice}")
+    passos_commitar = repositorio.passos
+    repositorio.log()
+    passos_log = repositorio.passos
+    return passos_commitar, passos_log
+
+
+print("commits   passos do commitar   passos do log")
+for quantidade in (10, 100, 1000):
+    passos_commitar, passos_log = medir(quantidade)
+    print(f"{quantidade:<10}{passos_commitar:<22}{passos_log}")
+
